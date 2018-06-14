@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <SurfaceView
+        android:id="@+id/surface_view_camera2_activity"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <ImageView
+        android:id="@+id/iv_show_camera2_activity"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:scaleType="centerCrop" />
+
+    <FrameLayout
+        android:id="@+id/camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <Button
+        android:id="@+id/front_back_button"
+        android:layout_width="65dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="20dp"
+        android:layout_marginBottom="30dp"
+        android:text="切换"
+        android:textSize="18dp" />
+
+    <Button
+        android:id="@+id/capture_button"
+        android:layout_width="65dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/front_back_button"
+        android:layout_marginStart="120dp"
+        android:text="拍摄"
+        android:textSize="18dp" />
+
+    <Button
+        android:id="@+id/record_button"
+        android:layout_width="65dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/front_back_button"
+        android:layout_marginEnd="120dp"
+        android:text="录像"
+        android:textSize="18dp" />
+
+
+    <Button
+        android:id="@+id/album_button"
+        android:layout_width="68dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/front_back_button"
+        android:layout_marginBottom="18dp"
+        android:layout_marginEnd="20dp"
+
+        android:text="相册"
+        android:textSize="18dp" />
+
+    <Button
+        android:id="@+id/preview_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:text="继续预览"
+        android:textSize="18dp"
+        android:visibility="visible" />
+
+</RelativeLayout>
