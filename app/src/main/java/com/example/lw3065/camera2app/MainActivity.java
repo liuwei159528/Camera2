@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button recordButton;
     Button chooseFromAlbum;
     Button previewButton;
-    float finger_space, current_finger_space;
+    private float finger_space, current_finger_space;
+    private float zoom_level = 1;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -179,16 +180,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Log.e(TAG, "X0: "+ event.getX(0)+ ", Y0: "+event.getY(0)+", fingerCount: "+event.getPointerCount());
                     Log.e(TAG, "X1: "+ event.getX(1)+ ", Y1: "+event.getY(1));
                     Log.e("calculateTapArea","getMaxZoom: "+ cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM));
-                    float maxZoom = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
-                    Rect m =cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-                    int action = event.getAction();
-
-
-                    float x = event.getX(0) - event.getX(1);
-                    float y = event.getY(0) - event.getY(1);
-                    current_finger_space = (float)Math.sqrt((double)(x*x + y*y));
-
-
+                    updateZoomPreview(event);
 
                 }
                 else{
@@ -535,6 +527,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    protected void updateZoomPreview(MotionEvent event){
+        float maxZoom = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+        Rect m =cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+        int action = event.getAction();
+
+
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        current_finger_space = (float)Math.sqrt((double)(x*x + y*y));
+
+        if(finger_space != 0){
+            if(current_finger_space > finger_space && maxZoom > zoom_level){
+                zoom_level++;
+            }else if(current_finger_space<finger_space && zoom_level > 1){
+                zoom_level--;
+            }
+            int minW = (int)(m.width()/maxZoom);
+            int minH = (int)(m.height()/maxZoom);
+            int difW = m.width()-minW;
+            int difH = m.height()-minH;
+            Log.e(TAG, "difW: "+ difW+ ", difH: "+difH);
+            int cropW = difW/10*(int)zoom_level;
+            int cropH = difH/10*(int)zoom_level;
+            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
+            cropW -= cropW & 3;
+            cropH -= cropH & 3;
+            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
+            Rect zoom = new Rect(cropW, cropH, m.width()-cropW, m.height()-cropH);
+            mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+            mPreviewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+
+        }
+        finger_space = current_finger_space;
+        try{
+            mCameraCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), null, childHandler);
+        }catch (CameraAccessException e){
+            e.printStackTrace();
+        }
+    }
+
     protected void updateFocusPreview(){
         if(null == mCameraDevice){
             Log.e("CameraActivity", "updatePreview error");
@@ -553,11 +586,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }catch (CameraAccessException e){
             e.printStackTrace();
         }
-
-
-
-
-
 
     }
 
