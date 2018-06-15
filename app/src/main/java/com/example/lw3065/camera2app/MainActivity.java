@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button previewButton;
     private float finger_space, current_finger_space;
     private float zoom_level = 1;
-
+    private String fileRecordName = null;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,13 +143,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
                 if(0 == iCamera2Status) {
                     iCamera2Status = 1;
-//                    Log.e(TAG, "recordButton 1" );
+                    Log.e(TAG, "recordButton 1" );
                     takeRecord();
                     recordButton.setTextColor(Color.RED);
                 }
                 else {
                     iCamera2Status = 0;
-//                    Log.e(TAG, "recordButton 2" );
+                    Log.e(TAG, "recordButton 2" );
                     stopRecord();
                     recordButton.setTextColor(Color.BLACK);
                 }
@@ -177,16 +177,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getPointerCount()>1){
-//                    Log.e(TAG, "X0: "+ event.getX(0)+ ", Y0: "+event.getY(0)+", fingerCount: "+event.getPointerCount());
-//                    Log.e(TAG, "X1: "+ event.getX(1)+ ", Y1: "+event.getY(1));
-//                    Log.e("calculateTapArea","getMaxZoom: "+ cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM));
+                    Log.e(TAG, "X0: "+ event.getX(0)+ ", Y0: "+event.getY(0)+", fingerCount: "+event.getPointerCount());
+                    Log.e(TAG, "X1: "+ event.getX(1)+ ", Y1: "+event.getY(1));
+                    Log.e("calculateTapArea","getMaxZoom: "+ cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM));
                     updateZoomPreview(event);
 
                 }
                 else{
                     focusRect = calculateTapArea(event.getX(), event.getY(), cameraPreview.getWidth(), cameraPreview.getHeight());
                     updateFocusPreview();
-//                    Log.e(TAG, "X: "+ event.getX()+ ", Y: "+event.getY());
+                    Log.e(TAG, "X: "+ event.getX()+ ", Y: "+event.getY());
                 }
 
                 return  true;
@@ -204,19 +204,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Rect rect = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
 
-//       // Rect cropRegion = mPreviewRequestBuilder.build().get(CaptureRequest.SCALER_CROP_REGION);
-//       // int cropWidth = cropRegion.width(), cropHeight = cropRegion.height();
-//        Log.e("calculateTapArea", "cropRegion.width: "+rect.width()+", cropRegion.height: "+rect.height()+", rect.right: "+rect.right+", rect.bottom: "+rect.bottom);
+//        Rect cropRegion = mPreviewRequestBuilder.build().get(CaptureRequest.SCALER_CROP_REGION);
+//        int cropWidth = cropRegion.width(), cropHeight = cropRegion.height();
+        Log.e("calculateTapArea", "cropRegion.width: "+rect.width()+", cropRegion.height: "+rect.height()+", rect.right: "+rect.right+", rect.bottom: "+rect.bottom);
         int centerX = (int)(((y)*rect.right)/width);
         int centerY = (int)(((width-x)*rect.bottom)/height);
 
-//        Log.e("calculateTapArea", "centerX: "+centerX+", centerY: "+centerY);
+        Log.e("calculateTapArea", "centerX: "+centerX+", centerY: "+centerY);
+
 
         RectF rectF = new RectF(clamp(centerX-focusAreaSize, 0, rect.right),
                 clamp(centerY-focusAreaSize, 0, rect.bottom),
                 clamp(centerX+focusAreaSize, 0, rect.right),
                 clamp(centerY+focusAreaSize, 0, rect.bottom));
-//        Log.e("calculateTapArea","left: "+ Math.round(rectF.left)+", top: "+Math.round(rectF.top)+", right: "+Math.round(rectF.right)+ ", bottom: "+ Math.round(rectF.bottom));
+        Log.e("calculateTapArea","left: "+ Math.round(rectF.left)+", top: "+Math.round(rectF.top)+", right: "+Math.round(rectF.right)+ ", bottom: "+ Math.round(rectF.bottom));
         return new Rect(Math.round(rectF.left),Math.round(rectF.top),Math.round(rectF.right),Math.round(rectF.bottom));
     }
 
@@ -355,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void closeCamera(){
         if(null != mCameraDevice) {
-//            Log.e("closeCamera", "is closing");
+            Log.e("closeCamera", "is closing");
             mCameraDevice.close();
             MainActivity.this.mCameraDevice = null;
         }else
@@ -371,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             // 将SurfaceView的surface作为CaptureRequest.Builder的目标
             mPreviewRequestBuilder.addTarget(mSurfaceHolder.getSurface());
-//            Log.e("TAG","createCaptureSession");
+            Log.e("TAG","createCaptureSession");
             // 创建CameraCaptureSession，该对象负责管理处理预览请求和拍照请求
             mCameraDevice.createCaptureSession(Arrays.asList(mSurfaceHolder.getSurface(), mImageReader.getSurface()), new CameraCaptureSession.StateCallback() // ③
             {
@@ -457,6 +458,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         try{
             mMediaRecorder = new MediaRecorder();
             closePreviewSession();
+            fileRecordName = null;
             setUpMediaRecord();
 
             mPreviewRequestBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
@@ -470,7 +472,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             surfaces.add(recordSurface);
             mPreviewRequestBuilder.addTarget(recordSurface);
 
-//            Log.e(TAG, "createCaptureSession" );
+            Log.e(TAG, "createCaptureSession" );
             mCameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback() {
                 @Override
                 public void onConfigured(@NonNull CameraCaptureSession session) {
@@ -502,6 +504,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mMediaRecorder.reset();
             mMediaRecorder.release();
             mMediaRecorder = null;
+            if(null != fileRecordName){
+                MediaScannerConnection.scanFile(this, new String[]{Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)+"/"+fileRecordName+".mp4"}, null, null);
+            }
         }
 
         Toast.makeText(MainActivity.this, "stop record video", Toast.LENGTH_SHORT).show();
@@ -513,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e("CameraActivity", "updatePreview error");
             return;
         }
-//        Log.e("CameraActivity", "updatePreview");
+        Log.e("CameraActivity", "updatePreview");
         // 自动对焦
         mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         // 打开闪光灯
@@ -546,13 +551,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             int minH = (int)(m.height()/maxZoom);
             int difW = m.width()-minW;
             int difH = m.height()-minH;
-//            Log.e(TAG, "difW: "+ difW+ ", difH: "+difH);
+            Log.e(TAG, "difW: "+ difW+ ", difH: "+difH);
             int cropW = difW/10*(int)zoom_level;
             int cropH = difH/10*(int)zoom_level;
-//            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
+            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
             cropW -= cropW & 3;
             cropH -= cropH & 3;
-//            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
+            Log.e(TAG, "cropW: "+ cropW+ ", cropH: "+cropH);
             Rect zoom = new Rect(cropW, cropH, m.width()-cropW, m.height()-cropH);
             mPreviewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, zoom);
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
@@ -602,17 +607,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             outputStream.write(data);
             outputStream.flush();
             outputStream.close();
-            Toast.makeText(MainActivity.this, "保存"+fileName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "保存"+Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)+"/"+fileName, Toast.LENGTH_SHORT).show();
         }catch (Exception e){
             e.printStackTrace();
         }
-        MediaScannerConnection.scanFile(MainActivity.this, new String[]{Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)+fileName}, null, null);
+        MediaScannerConnection.scanFile(this, new String[]{Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)+"/"+fileName}, null, null);
     }
 
     public File getOutputMediaFile(){
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-        String fileName = format.format(date);
+        fileRecordName = format.format(date);
         File filepath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
         if(!filepath.exists()){
             if(!filepath.mkdir()){
@@ -623,10 +628,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         File file = null;
         try{
-            file = File.createTempFile(fileName,".mp4", filepath);
+            file = File.createTempFile(fileRecordName,".mp4", filepath);
         }catch (IOException e){
             e.printStackTrace();
         }
+
         return file;
     }
 
@@ -649,24 +655,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void handleImageOnKitKat(Intent data){
         String imagePath = null;
         Uri uri = data.getData();
-        if(DocumentsContract.isDocumentUri(this, uri)){
+        Log.e(TAG, "uri: "+ uri);
+
+        if(DocumentsContract.isDocumentUri(MainActivity.this, uri)){
             String docId = DocumentsContract.getDocumentId(uri);
-            if("com.android.externalstorage.documents".equals(uri.getAuthority()))
+
+            if("com.android.providers.media.documents".equals(uri.getAuthority()))
             {
-                String relativPath = docId.split(":")[1];
-                imagePath = "/storage/emulated/0/"+relativPath;
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+
+                imagePath = getImagePath(MainActivity.this, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, selection);
             }
         }else if("content".equalsIgnoreCase(uri.getScheme())){
-            imagePath = getImagePath(uri, null);
+
+            imagePath = getImagePath(MainActivity.this, uri, null);
+            Log.e(TAG, "imagePath is "+ imagePath);
         }else if("file".equalsIgnoreCase(uri.getScheme())){
             imagePath = uri.getPath();
+            Log.e(TAG, "imagePath2 is "+ imagePath);
         }
         diaplayImage(imagePath);
     }
 
-    private String getImagePath(Uri uri, String selection){
+    private String getImagePath(Context context, Uri uri, String selection){
         String path = null;
-        Cursor cursor = getContentResolver().query(uri, null, selection, null, null);
+        Cursor cursor = context.getContentResolver().query(uri, null, selection, null, null);
         if(null!= cursor){
             if(cursor.moveToFirst()){
                 path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
@@ -681,7 +695,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         closeCamera();
         setPreviewGone();
         if(null != imagePath){
-//            Log.e("diaplayImage", "imagePath:"+imagePath);
+            Log.e("diaplayImage", "imagePath:"+imagePath);
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
             iv_show.setImageBitmap(bitmap);
 
